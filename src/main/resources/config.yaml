@@ -1,0 +1,25 @@
+!!com.appdynamics.cloud.prometheus.config.ServiceConfig
+
+eventsServiceEndpoint: "https://analytics.api.appdynamics.com:443"
+eventsServiceApikey: ""
+controllerGlobalAccount: ""
+prometheusUrl: "https://aps-workspaces.us-west-2.amazonaws.com/workspaces/ws-xxxxxxx-186e-xxxx-926b-xxxxxxxxx/api/v1/query"
+awsRegion: "us-west-2"
+awsAccessKey: ""
+awsSecretKey: ""
+  
+analyticsEventsSources:
+  - schemaName: "amp_node_metrics"
+    schemaJsonFilePath: ""
+    queriesTxtFilePath: ""
+    eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
+    executionInterval: "5"  # executionInterval (is in minutes)
+    
+    
+  - schemaName: "amp_kublt_metrics"
+    schemaJsonFilePath: ""
+    queriesTxtFilePath: ""
+    eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
+    executionInterval: "5"  # executionInterval (is in minutes)
+
+
