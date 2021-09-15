@@ -4,22 +4,23 @@ eventsServiceEndpoint: "https://analytics.api.appdynamics.com:443"
 eventsServiceApikey: ""
 controllerGlobalAccount: ""
 prometheusUrl: "https://aps-workspaces.us-west-2.amazonaws.com/workspaces/ws-xxxxxxx-186e-xxxx-926b-xxxxxxxxx/api/v1/query"
-awsRegion: "us-west-2"
-awsAccessKey: ""
-awsSecretKey: ""
+authenticationMode: "awssigv4"  # options are ( none | awssigv4 )
+awsRegion: "us-west-2"            # mandatory if authenticationMode = awssigv4
+awsAccessKey: ""                  # mandatory if authenticationMode = awssigv4
+awsSecretKey: ""                  # mandatory if authenticationMode = awssigv4
   
 analyticsEventsSources:
-  - schemaName: "amp_node_metrics"
+  - schemaName: "prom_node_metrics"
     schemaJsonFilePath: ""
-    queriesTxtFilePath: ""
+    queriesTextFilePath: ""
     eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
-    executionInterval: "5"  # executionInterval (is in minutes)
+    executionInterval: "5"  # executionInterval (is in minutes, whole numbers only)
     
     
-  - schemaName: "amp_kublt_metrics"
+  - schemaName: "prom_kubelet_metrics"
     schemaJsonFilePath: ""
-    queriesTxtFilePath: ""
+    queriesTextFilePath: ""
     eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
-    executionInterval: "5"  # executionInterval (is in minutes)
+    executionInterval: "5"  # executionInterval (is in minutes, whole numbers only)
 
 

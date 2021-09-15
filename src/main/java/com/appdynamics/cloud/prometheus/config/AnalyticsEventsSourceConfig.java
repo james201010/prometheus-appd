@@ -12,9 +12,9 @@ public class AnalyticsEventsSourceConfig {
 	private String eventsSourceClass;
 	private String schemaName;
 	private String executionInterval;
-	
-	
-	
+	private String schemaJsonFilePath;
+	private String queriesTextFilePath;
+
 	
 	/**
 	 * 
@@ -55,8 +55,32 @@ public class AnalyticsEventsSourceConfig {
 
 
 
-	public void setExecutionInterval(String publishEventsInterval) {
-		this.executionInterval = publishEventsInterval;
+	public void setExecutionInterval(String executionInterval) {
+		this.executionInterval = executionInterval;
+	}
+
+
+
+	public String getSchemaJsonFilePath() {
+		return schemaJsonFilePath;
+	}
+
+
+
+	public void setSchemaJsonFilePath(String schemaJsonFilePath) {
+		this.schemaJsonFilePath = schemaJsonFilePath;
+	}
+
+
+
+	public String getQueriesTextFilePath() {
+		return queriesTextFilePath;
+	}
+
+
+
+	public void setQueriesTextFilePath(String queriesTextFilePath) {
+		this.queriesTextFilePath = queriesTextFilePath;
 	}
 
 

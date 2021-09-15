@@ -19,6 +19,8 @@ public class ServiceConfig {
     
     private String prometheusUrl;
     
+    private String authenticationMode;
+    
     private String awsRegion;
     
     private String awsAccessKey;
@@ -74,6 +76,16 @@ public class ServiceConfig {
 
 	public void setPrometheusUrl(String awsAmpWorkspaceUrl) {
 		this.prometheusUrl = awsAmpWorkspaceUrl;
+	}
+
+
+	public String getAuthenticationMode() {
+		return authenticationMode;
+	}
+
+
+	public void setAuthenticationMode(String authenticationMode) {
+		this.authenticationMode = authenticationMode;
 	}
 
 
