@@ -11,22 +11,15 @@ import java.util.List;
  */
 public class ServiceConfig {
 
+	private boolean debugLogging = false;
     private String eventsServiceEndpoint;
-	
     private String eventsServiceApikey;
-	
     private String controllerGlobalAccount;
-    
     private String prometheusUrl;
-    
     private String authenticationMode;
-    
     private String awsRegion;
-    
     private String awsAccessKey;
-    
     private String awsSecretKey;
-	
 	
 	private List<AnalyticsEventsSourceConfig> analyticsEventsSources;
 	
@@ -39,6 +32,19 @@ public class ServiceConfig {
 	}
 
 	
+	
+	public boolean isDebugLogging() {
+		return debugLogging;
+	}
+
+
+
+	public void setDebugLogging(boolean debugLog) {
+		this.debugLogging = debugLog;
+	}
+
+
+
 	public String getEventsServiceEndpoint() {
 		return eventsServiceEndpoint;
 	}

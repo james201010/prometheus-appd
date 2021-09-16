@@ -31,11 +31,31 @@ public class AppdPrometheusAppListener implements ApplicationConstants, Applicat
 	private static ServiceConfig SRVCS_CONF;
 	private static List<Thread> ANALYTICS_DRIVER_THREADS;
 	
+	public static boolean DEBUG_LOGGING = false;
+	
 	/**
 	 * 
 	 */
 	public AppdPrometheusAppListener() {
-		logr = new Logger(AppdPrometheusAppListener.class.getSimpleName());
+		
+//		try {
+//
+//			String confPath = System.getProperty(SERVICE_CONF_KEY);
+//			
+//			
+//			Yaml yaml = new Yaml(new Constructor(ServiceConfig.class));
+//			InputStream inputStream = StringUtils.getFileAsStream(confPath);
+//			
+//			SRVCS_CONF = yaml.load(inputStream);
+//			
+//			logr = new Logger(AppdPrometheusAppListener.class.getSimpleName(), SRVCS_CONF.isDebugLogging());
+//			
+//		} catch (Throwable ex) {
+//			ex.printStackTrace();
+//			System.exit(1);
+//		}
+		
+		
 	}
 
 	
@@ -48,8 +68,32 @@ public class AppdPrometheusAppListener implements ApplicationConstants, Applicat
 			if (ace.getState().equals(ReadinessState.ACCEPTING_TRAFFIC)) {
 		
 				try {
+
+					Logger l = new Logger("");
 					
-					logr.printBanner(true);
+					l.printBanner(true);
+					
+					l.log("##########################################################################################    STARTING APPDYNAMICS PROMETHEUS SERVICE    ################################################################################");
+					l.carriageReturn();
+					
+					String confPath = System.getProperty(SERVICE_CONF_KEY);
+					
+					if (confPath == null || confPath.equals("")) {
+						l.error("Missing JVM startup property -D" + SERVICE_CONF_KEY);
+						l.error("Please set this property -D" + SERVICE_CONF_KEY + " with the full path to the configuration Yaml file like this | -D" + SERVICE_CONF_KEY + "=/opt/appdynamics/appd-prometheus/conf/config.yaml");
+						System.exit(1);
+					}
+					
+					l = null;
+					
+					Yaml yaml = new Yaml(new Constructor(ServiceConfig.class));
+					InputStream inputStream = StringUtils.getFileAsStream(confPath);
+					
+					SRVCS_CONF = yaml.load(inputStream);
+					
+					logr = new Logger(AppdPrometheusAppListener.class.getSimpleName(), SRVCS_CONF.isDebugLogging());
+					
+					DEBUG_LOGGING = SRVCS_CONF.isDebugLogging();
 					
 					this.initializeServices();
 					
@@ -67,19 +111,15 @@ public class AppdPrometheusAppListener implements ApplicationConstants, Applicat
 	
 	private void initializeServices() throws Throwable {
 		
-		String confPath = System.getProperty(SERVICE_CONF_KEY);
-		Yaml yaml = new Yaml(new Constructor(ServiceConfig.class));
-		InputStream inputStream = StringUtils.getFileAsStream(confPath);
-		
-		SRVCS_CONF = yaml.load(inputStream);
-		
-		
         List<AnalyticsEventsSourceConfig> aescList = SRVCS_CONF.getAnalyticsEventsSources();
+        
         if (aescList != null) {
         	
         	ANALYTICS_DRIVER_THREADS = new ArrayList<Thread>();
         	
         	for (AnalyticsEventsSourceConfig aesConf : aescList) {
+        
+        		//logr.info("*****************************  Initializing Events Source for Schema '" + aesConf.getSchemaName() + "'  *****************************");
         		
             	AnalyticsEventsDriver driver;
             	AnalyticsEventsSource source;

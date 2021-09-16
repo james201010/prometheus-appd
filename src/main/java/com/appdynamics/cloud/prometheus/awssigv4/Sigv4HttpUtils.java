@@ -11,6 +11,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import com.appdynamics.cloud.prometheus.AppdPrometheusAppListener;
 import com.appdynamics.cloud.prometheus.Logger;
 
 /**
@@ -18,7 +19,7 @@ import com.appdynamics.cloud.prometheus.Logger;
  */
 public class Sigv4HttpUtils {
 
-	private static Logger logr = new Logger(Sigv4HttpUtils.class.getSimpleName());
+	private static Logger logr = new Logger(Sigv4HttpUtils.class.getSimpleName(), AppdPrometheusAppListener.DEBUG_LOGGING);
 	
     /**
      * Makes a http request to the specified endpoint
@@ -78,11 +79,13 @@ public class Sigv4HttpUtils {
             connection.setRequestMethod(httpMethod);
             
             if ( headers != null ) {
-            	logr.debug("--------- Request headers ---------");
+            	logr.carriageReturnDebug();
+            	logr.debug("--------------------------------------------------------------------------------- Request headers begin ----------");
                 for ( String headerKey : headers.keySet() ) {
-                    System.out.println(headerKey + ": " + headers.get(headerKey));
+                	logr.debug(headerKey + ": " + headers.get(headerKey));
                     connection.setRequestProperty(headerKey, headers.get(headerKey));
                 }
+                logr.debug("--------------------------------------------------------------------------------- Request headers end ------------");
             }
 
             connection.setUseCaches(false);

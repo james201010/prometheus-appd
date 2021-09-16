@@ -20,7 +20,7 @@ public interface AnalyticsEventsSource {
 	// Used in the publishing of the events to identify the correct schema to publish to
 	public abstract String getSchemaName() throws Throwable;
 	
-	// TODO Not is use as of yet
+	// The path of the file that contains the analytics schema definition to create / publish events to
 	public abstract String getSchemaDefinitionFilePath() throws Throwable;
 	
 	// Called once per "getExecutionInterval()" to get the next batch of events in JSON format to publish

@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.appdynamics.cloud.prometheus.AppdPrometheusAppListener;
 import com.appdynamics.cloud.prometheus.Logger;
 
 /**
@@ -15,7 +16,7 @@ import com.appdynamics.cloud.prometheus.Logger;
  */
 public class Sigv4Client {
     
-	private static Logger logr = new Logger(Sigv4Client.class.getSimpleName());
+	private static Logger logr = new Logger(Sigv4Client.class.getSimpleName(), AppdPrometheusAppListener.DEBUG_LOGGING);
 	
     public static String processRequest(String endpointUrlWithParms, String regionName, String awsAccessKey, String awsSecretKey, Map<String, String> queryParameters) {
         
@@ -41,12 +42,13 @@ public class Sigv4Client {
                                                        awsSecretKey);
                 
         // place the computed signature into a formatted 'Authorization' header
-        // and call S3
+        // and call the service
         headers.put("Authorization", authorization);
         String response = Sigv4HttpUtils.invokeHttpRequest(endpointUrl, "GET", headers, null);
-        logr.info("--------- Response content ---------");
-        logr.info(response);
-        logr.info("------------------------------------");
+        logr.carriageReturnDebug();
+        logr.debug("--------------------------------------------------------------------------------- Response content begin ---------");
+        logr.debug(response);
+        logr.debug("--------------------------------------------------------------------------------- Response content end -----------");
         
         return response;
     }

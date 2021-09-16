@@ -51,6 +51,13 @@
 		    <artifactId>httpclient</artifactId>
 		    <version>4.5.12</version>
 		</dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+           <groupId>org.json</groupId>
+           <artifactId>json</artifactId>
+           <version>20210307</version>
+        </dependency>
 				
 	</dependencies>
 

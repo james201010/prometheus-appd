@@ -26,12 +26,14 @@ public class AnalyticsEventsDriver implements Runnable {
 
 	private ServiceConfig serviceConfig;
 	private AnalyticsEventsSource analyticsEventsSource;
-	private static Logger logr = new Logger(AnalyticsEventsDriver.class.getSimpleName());
+	private static Logger logr;
 	
 	/**
 	 * 
 	 */
 	public AnalyticsEventsDriver(ServiceConfig serviceConfig, AnalyticsEventsSource analyticsEventsSource) {
+		
+		logr = new Logger(AnalyticsEventsDriver.class.getSimpleName(), serviceConfig.isDebugLogging());
 		this.serviceConfig = serviceConfig;
 		this.analyticsEventsSource = analyticsEventsSource;
 		
@@ -44,11 +46,16 @@ public class AnalyticsEventsDriver implements Runnable {
 
 			try {
 				
-				logr.info("##############################  Publishing Analytics Events for '" + this.analyticsEventsSource.getSchemaName() + "' schema ##############################");
+				logr.info("##############################  Publishing Analytics Events for schema '" + this.analyticsEventsSource.getSchemaName() + "'");
 				
-				this.createSchemaIfRequired();
+				//this.createSchemaIfRequired();
 
-				this.publishEvents();
+				//this.publishEvents();
+				
+				String payload = this.analyticsEventsSource.getEvents2PublishJson();
+				
+				
+				
 				
 				Thread.currentThread().sleep(this.analyticsEventsSource.getExecutionInterval() * 60000);
 				
@@ -64,9 +71,9 @@ public class AnalyticsEventsDriver implements Runnable {
 		
 		String accountName = this.serviceConfig.getControllerGlobalAccount();
 		String apiKey = this.serviceConfig.getEventsServiceApikey();
-		String restEndpoint = this.serviceConfig.getEventsServiceEndpoint() + "/events/publish/" + this.analyticsEventsSource.getSchemaName();;
+		String restEndpoint = this.serviceConfig.getEventsServiceEndpoint() + "/events/publish/" + this.analyticsEventsSource.getSchemaName();
+		
 		String payload = this.analyticsEventsSource.getEvents2PublishJson();
-		String schemaName = this.analyticsEventsSource.getSchemaName();
 		
 		CloseableHttpClient client = HttpClients.createDefault();
 		
@@ -82,7 +89,7 @@ public class AnalyticsEventsDriver implements Runnable {
 	    
 	    CloseableHttpResponse response = client.execute(request);
 		
-	    logr.info(" - Schema: " + schemaName + " : HTTP Status: " + response.getStatusLine().getStatusCode());
+	    logr.info(" - Schema: " + this.analyticsEventsSource.getSchemaName() + " : HTTP Status: " + response.getStatusLine().getStatusCode());
 	    
 		String resp = "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -108,8 +115,7 @@ public class AnalyticsEventsDriver implements Runnable {
 		
 		String accountName = this.serviceConfig.getControllerGlobalAccount();
 		String apiKey = this.serviceConfig.getEventsServiceApikey();
-		String restEndpoint = this.serviceConfig.getEventsServiceEndpoint() + "/events/schema/" + this.analyticsEventsSource.getSchemaName();;
-		String schemaName = this.analyticsEventsSource.getSchemaName();
+		String restEndpoint = this.serviceConfig.getEventsServiceEndpoint() + "/events/schema/" + this.analyticsEventsSource.getSchemaName();
 		
 		CloseableHttpClient client = HttpClients.createDefault();
 		
@@ -125,7 +131,7 @@ public class AnalyticsEventsDriver implements Runnable {
 	    int statusCode = response.getStatusLine().getStatusCode();
 	    
 	    logr.debug(" - Checking for existing schema");
-	    logr.debug(" - Schema: " + schemaName + " : HTTP Status: " + response.getStatusLine().getStatusCode());
+	    logr.debug(" - Schema: " + this.analyticsEventsSource.getSchemaName() + " : HTTP Status: " + response.getStatusLine().getStatusCode());
 	    
 	    boolean exists = false;
 	    
@@ -142,7 +148,7 @@ public class AnalyticsEventsDriver implements Runnable {
 		default:
 			HttpClientUtils.closeQuietly(response);
 			HttpClientUtils.closeQuietly(client);			
-			throw new Exception("Unable to check if schema exists | schema name = " + schemaName + " | HTTP status = " + statusCode);
+			throw new Exception("Unable to check if schema exists | schema name = " + this.analyticsEventsSource.getSchemaName() + " | HTTP status = " + statusCode);
 		}
 		
 	    
@@ -179,8 +185,7 @@ public class AnalyticsEventsDriver implements Runnable {
 		
 		String accountName = this.serviceConfig.getControllerGlobalAccount();
 		String apiKey = this.serviceConfig.getEventsServiceApikey();
-		String restEndpoint = this.serviceConfig.getEventsServiceEndpoint() + "/events/schema/" + this.analyticsEventsSource.getSchemaName();;
-		String schemaName = this.analyticsEventsSource.getSchemaName();	
+		String restEndpoint = this.serviceConfig.getEventsServiceEndpoint() + "/events/schema/" + this.analyticsEventsSource.getSchemaName();
 		String payload = this.generateCreateSchemaPayload(this.analyticsEventsSource.getSchemaDefinitionFilePath());
 		
 		CloseableHttpClient client = HttpClients.createDefault();
@@ -197,7 +202,8 @@ public class AnalyticsEventsDriver implements Runnable {
 	    
 	    CloseableHttpResponse response = client.execute(request);
 		
-	    logr.info(" - Schema: " + schemaName + " : HTTP Status: " + response.getStatusLine().getStatusCode());
+	    logr.debug(" - Creating schema");
+	    logr.debug(" - Schema: " + this.analyticsEventsSource.getSchemaName() + " : HTTP Status: " + response.getStatusLine().getStatusCode());
 	    
 		String resp = "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -225,4 +231,5 @@ public class AnalyticsEventsDriver implements Runnable {
 			this.createSchema();
 		}
 	}
+	
 }

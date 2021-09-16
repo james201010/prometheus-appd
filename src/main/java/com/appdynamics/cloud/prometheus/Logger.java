@@ -9,7 +9,7 @@ package com.appdynamics.cloud.prometheus;
  */
 public class Logger {
 
-	String clazzName = "AppD-AWS-Amp-Service";
+	String clazzName = "AppD-Prometheus-Service";
 	boolean debug = false;
 	
 	
@@ -43,6 +43,13 @@ public class Logger {
 	public void debug(String msg) {
 		if (this.debug) {
 			this.log(this.clazzName + "|DEBUG|" + msg);
+		}
+		
+	}
+
+	public void carriageReturnDebug() {
+		if (this.debug) {
+			System.out.println("");
 		}
 		
 	}
