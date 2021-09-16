@@ -12,7 +12,7 @@ public class AnalyticsEventsSourceConfig {
 	private String eventsSourceClass;
 	private String schemaName;
 	private String executionInterval;
-	private String schemaJsonFilePath;
+	private String schemaDefinitionFilePath;
 	private String queriesTextFilePath;
 
 	
@@ -61,14 +61,14 @@ public class AnalyticsEventsSourceConfig {
 
 
 
-	public String getSchemaJsonFilePath() {
-		return schemaJsonFilePath;
+	public String getSchemaDefinitionFilePath() {
+		return schemaDefinitionFilePath;
 	}
 
 
 
-	public void setSchemaJsonFilePath(String schemaJsonFilePath) {
-		this.schemaJsonFilePath = schemaJsonFilePath;
+	public void setSchemaDefinitionFilePath(String schemaDefinitionFilePath) {
+		this.schemaDefinitionFilePath = schemaDefinitionFilePath;
 	}
 
 

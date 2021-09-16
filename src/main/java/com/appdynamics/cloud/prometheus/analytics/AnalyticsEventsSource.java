@@ -21,7 +21,7 @@ public interface AnalyticsEventsSource {
 	public abstract String getSchemaName() throws Throwable;
 	
 	// TODO Not is use as of yet
-	public abstract String getSchemaDefinitionJson() throws Throwable;
+	public abstract String getSchemaDefinitionFilePath() throws Throwable;
 	
 	// Called once per "getExecutionInterval()" to get the next batch of events in JSON format to publish
 	public abstract String getEvents2PublishJson() throws Throwable;

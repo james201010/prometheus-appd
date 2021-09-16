@@ -25,7 +25,7 @@ import com.appdynamics.cloud.prometheus.utils.StringUtils;
  * @author James Schneider
  *
  */
-public class AppDPrometheusAppListener implements ApplicationConstants, ApplicationListener<ApplicationEvent> {
+public class AppdPrometheusAppListener implements ApplicationConstants, ApplicationListener<ApplicationEvent> {
 
 	private static Logger logr;
 	private static ServiceConfig SRVCS_CONF;
@@ -34,8 +34,8 @@ public class AppDPrometheusAppListener implements ApplicationConstants, Applicat
 	/**
 	 * 
 	 */
-	public AppDPrometheusAppListener() {
-		logr = new Logger(AppDPrometheusAppListener.class.getSimpleName());
+	public AppdPrometheusAppListener() {
+		logr = new Logger(AppdPrometheusAppListener.class.getSimpleName());
 	}
 
 	
