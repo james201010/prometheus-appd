@@ -1,4 +1,4 @@
-package com.appdynamics.cloud.prometheus.sigv4;
+package com.appdynamics.cloud.prometheus.awssigv4;
 
 import java.net.URL;
 import java.security.MessageDigest;
@@ -50,7 +50,7 @@ public abstract class Sigv4SignerBase {
      * @param httpMethod
      *            The HTTP verb for the request, e.g. GET.
      * @param serviceName
-     *            The signing name of the service, e.g. 's3'.
+     *            The signing name of the service, e.g. 's3' 'aps'.
      * @param regionName
      *            The system name of the AWS region associated with the
      *            endpoint, e.g. us-east-1.

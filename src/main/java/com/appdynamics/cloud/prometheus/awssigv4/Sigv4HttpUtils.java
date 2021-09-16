@@ -1,4 +1,4 @@
-package com.appdynamics.cloud.prometheus.sigv4;
+package com.appdynamics.cloud.prometheus.awssigv4;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

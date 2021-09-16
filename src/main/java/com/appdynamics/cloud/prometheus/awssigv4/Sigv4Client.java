@@ -1,4 +1,4 @@
-package com.appdynamics.cloud.prometheus.sigv4;
+package com.appdynamics.cloud.prometheus.awssigv4;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,17 +8,15 @@ import java.util.Map;
 import com.appdynamics.cloud.prometheus.Logger;
 
 /**
- * Samples showing how to GET an object from Amazon S3 using Signature V4
- * authorization.
+ * 
+ * Client used to send GET request to a service that requires Signature V4 authorization 
+ * and return the response body as a String.
+ * 
  */
 public class Sigv4Client {
     
 	private static Logger logr = new Logger(Sigv4Client.class.getSimpleName());
 	
-    /**
-     * Request the content of the object '/ExampleObject.txt' from the given
-     * bucket in the given region using virtual hosted-style object addressing.
-     */
     public static String processRequest(String endpointUrlWithParms, String regionName, String awsAccessKey, String awsSecretKey, Map<String, String> queryParameters) {
         
         // the region-specific endpoint to the target object expressed in path style

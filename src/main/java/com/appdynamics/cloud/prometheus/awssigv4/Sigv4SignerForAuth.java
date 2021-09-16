@@ -1,4 +1,4 @@
-package com.appdynamics.cloud.prometheus.sigv4;
+package com.appdynamics.cloud.prometheus.awssigv4;
 
 import java.net.URL;
 import java.util.Date;
@@ -8,7 +8,7 @@ import com.appdynamics.cloud.prometheus.Logger;
 
 
 /**
- * Sample AWS4 signer demonstrating how to sign requests to Amazon S3 using an
+ * AWS4 signer used to sign requests to an AWS service using an
  * 'Authorization' header.
  */
 public class Sigv4SignerForAuth extends Sigv4SignerBase {
