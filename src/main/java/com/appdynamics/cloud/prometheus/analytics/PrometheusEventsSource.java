@@ -5,6 +5,7 @@ package com.appdynamics.cloud.prometheus.analytics;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +35,9 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 	private ServiceConfig serviceConfig;
 	private AnalyticsEventsSourceConfig eventsSourceConfig;
 	private int executionInterval = 1;
+	private Map<String, String> schemaMap;
 	private static Logger logr;
+	
 	
 	/**
 	 * 
@@ -50,6 +53,8 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 		this.serviceConfig = serviceConfig;
 		this.eventsSourceConfig = analyticsEventsSourceConfig;
 		this.executionInterval = Integer.parseInt(this.eventsSourceConfig.getExecutionInterval());
+		this.schemaMap = this.getSchemaMap();
+		
 		
 		logr.info("##############################  Initializing Prometheus Events Source for schema '" + this.eventsSourceConfig.getSchemaName() + "'");
 	}
@@ -72,23 +77,30 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 
 	
 	@Override
-	public String getEvents2PublishJson() throws Throwable {
+	public void timeToPublishEvents(AnalyticsEventsPublisher publisher) throws Throwable {
 		
 		
 		String[] promQueries = this.getPromQueriesFromFile();
 		
+		
 		for (int qryCntr = 0; qryCntr < promQueries.length; qryCntr++) {
 			
-			this.buildJSONForQuery(this.executePromQuery(promQueries[qryCntr]));
+			String jsonPayload = this.buildJSONForQuery(this.executePromQuery(promQueries[qryCntr]));
+			
+			logr.carriageReturn();
+			logr.info(jsonPayload);
+			publisher.publishEvents(jsonPayload);
+			
 			
 		}
 		
-		
-		return null;
 	}
 	
 	
 	private String buildJSONForQuery(String json) throws Throwable {
+		
+		StringBuffer buff = new StringBuffer();
+		buff.append("[");
 		
 		JSONObject respObj = new JSONObject(json);
 		
@@ -109,22 +121,94 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 		
 		JSONObject metricWrapper = null;
 		JSONObject metricMeta = null;
-		JSONObject metricValue = null;
-		
+		JSONArray metricValue = null;
+		BigDecimal timestamp;
+		float tstamp = 0;
 		for (int i=0; i < resArray.length(); i++) {
 			metricWrapper = resArray.getJSONObject(i);
 			metricMeta = metricWrapper.getJSONObject("metric");
+			metricValue = metricWrapper.getJSONArray("value");
 			
+			this.buildSingleMetricJson(buff, metricMeta, metricValue);
+			timestamp = metricValue.getBigDecimal(0);
+			tstamp = timestamp.floatValue();
+			tstamp = tstamp * 1000;
+			this.buildSingleMetricAttribute(buff, "eventTimestamp", "" + new Float(tstamp).longValue(), "float");
+			buff.append("}");
 			
-			logr.info(metricMeta.getString("__name__"));
+			if (i < resArray.length()-1) {
+				buff.append(",");
+			}
+
+			
+			//logr.info("Name = " + metricMeta.getString("__name__"));
+			//logr.info("Value = " + metricValue.getString(1));
 			
 		}
 		
-
+		buff.append("]");
 		
-		return "";
+		
+		return buff.toString();
 	}
 	
+	private void buildSingleMetricJson(StringBuffer buff, JSONObject metricMeta, JSONArray metricValue) throws Throwable {
+		
+		buff.append("{");
+		
+		for (String attrName : this.schemaMap.keySet()) {
+			
+			switch (attrName) {
+			case "metric_name":
+				this.buildSingleMetricAttribute(buff, "metric_name", metricMeta.getString("__name__"), this.schemaMap.get(attrName));
+				break;
+
+			case "metric_value":
+				this.buildSingleMetricAttribute(buff, "metric_value", metricValue.getString(1), this.schemaMap.get(attrName));
+				break;
+
+			default:
+				if (metricMeta.has(attrName)) {
+					this.buildSingleMetricAttribute(buff, attrName, metricMeta.getString(attrName), this.schemaMap.get(attrName));
+				} else {
+					this.buildSingleMetricAttribute(buff, attrName, null, this.schemaMap.get(attrName));
+				}
+				
+				break;
+			}
+			
+			buff.append(",");
+			
+		}
+		
+		
+		
+		
+	}
+	
+	private void buildSingleMetricAttribute(StringBuffer buff, String attrName, String attrVal, String dataType) throws Throwable {
+		
+		if (dataType.toLowerCase().equals("string") || dataType.toLowerCase().equals("date")) {
+			buff.append("\""+ attrName + "\": \"" + attrVal + "\"");
+		} else {
+			buff.append("\""+ attrName + "\": " + attrVal);
+		}
+		
+	}
+	
+	private Map<String, String> getSchemaMap() throws Throwable {
+		
+		Map<String, String> schemMap = new HashMap<String, String>();
+		String[] lines = StringUtils.getFileAsArrayOfLines(this.eventsSourceConfig.getSchemaDefinitionFilePath());
+		
+		for (int i = 0; i < lines.length; i++) {
+			String[] keyVal = StringUtils.split(lines[i], ",");
+			schemMap.put(keyVal[0], keyVal[1]);
+		}
+		
+		return schemMap;
+	}
+	 
 	private String executePromQuery(String promQl) throws Throwable {
 		
 		String queryResults = null;

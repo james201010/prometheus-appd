@@ -22,7 +22,7 @@ import com.appdynamics.cloud.prometheus.utils.StringUtils;
  * @author James Schneider
  *
  */
-public class AnalyticsEventsDriver implements Runnable {
+public class AnalyticsEventsDriver implements Runnable, AnalyticsEventsPublisher {
 
 	private ServiceConfig serviceConfig;
 	private AnalyticsEventsSource analyticsEventsSource;
@@ -48,11 +48,11 @@ public class AnalyticsEventsDriver implements Runnable {
 				
 				logr.info("##############################  Publishing Analytics Events for schema '" + this.analyticsEventsSource.getSchemaName() + "'");
 				
-				//this.createSchemaIfRequired();
+				this.createSchemaIfRequired();
 
 				//this.publishEvents();
 				
-				String payload = this.analyticsEventsSource.getEvents2PublishJson();
+				this.analyticsEventsSource.timeToPublishEvents(this);
 				
 				
 				
@@ -66,15 +66,14 @@ public class AnalyticsEventsDriver implements Runnable {
 		}
 		
 	}
-
-	private void publishEvents() throws Throwable {
+	
+	
+	public void publishEvents(String jsonPayload) throws Throwable {
 		
 		String accountName = this.serviceConfig.getControllerGlobalAccount();
 		String apiKey = this.serviceConfig.getEventsServiceApikey();
 		String restEndpoint = this.serviceConfig.getEventsServiceEndpoint() + "/events/publish/" + this.analyticsEventsSource.getSchemaName();
-		
-		String payload = this.analyticsEventsSource.getEvents2PublishJson();
-		
+
 		CloseableHttpClient client = HttpClients.createDefault();
 		
 		HttpPost request = new HttpPost(restEndpoint);
@@ -84,7 +83,7 @@ public class AnalyticsEventsDriver implements Runnable {
 		request.addHeader("Content-Type", "application/vnd.appd.events+json;v=2");
 		request.addHeader("Accept", "application/vnd.appd.events+json;v=2");
 
-	    StringEntity entity = new StringEntity(payload);
+	    StringEntity entity = new StringEntity(jsonPayload);
 	    request.setEntity(entity);
 	    
 	    CloseableHttpResponse response = client.execute(request);
@@ -102,8 +101,8 @@ public class AnalyticsEventsDriver implements Runnable {
         resp = out.toString();
 		reader.close();
 		
-		logr.debug("Publish Events Response");
-		logr.debug(resp);
+		logr.info("Publish Events Response");
+		logr.info(resp);
 
 		HttpClientUtils.closeQuietly(response);
 		HttpClientUtils.closeQuietly(client);

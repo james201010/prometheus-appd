@@ -23,8 +23,8 @@ public interface AnalyticsEventsSource {
 	// The path of the file that contains the analytics schema definition to create / publish events to
 	public abstract String getSchemaDefinitionFilePath() throws Throwable;
 	
-	// Called once per "getExecutionInterval()" to get the next batch of events in JSON format to publish
-	public abstract String getEvents2PublishJson() throws Throwable;
+	// Called once per "getExecutionInterval()" to publish the next batch of events
+	public abstract void timeToPublishEvents(AnalyticsEventsPublisher publisher) throws Throwable;
 	
 	
 	// Defines the interval in minutes which the next batch of events will be published
