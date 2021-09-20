@@ -1,6 +1,5 @@
 # AppDynamics Integration with Prometheus
 
-[AppDynamics](https://www.appdynamics.com) integration with Prometheus ...
 
 ## Introduction
 
@@ -51,28 +50,28 @@ awsSecretKey: ""                  # mandatory if authenticationMode = awssigv4
   
 analyticsEventsSources:
   - schemaName: "prom_node_metrics"
-    schemaDefinitionFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_node_metrics_schema.txt"
-    queriesTextFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_node_metrics_queries.txt"
+    schemaDefinitionFilePath: "./conf/prom_node_metrics_schema.txt"
+    queriesTextFilePath: "./conf/prom_node_metrics_queries.txt"
     eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
     executionInterval: "1"  # executionInterval (is in minutes, whole numbers only)
 
-#  - schemaName: "prom_kubelet_metrics"
-#    schemaDefinitionFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_kubelet_metrics_schema.txt"
-#    queriesTextFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_kubelet_metrics_queries.txt"
-#    eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
-#    executionInterval: "1"  # executionInterval (is in minutes, whole numbers only)
+  - schemaName: "prom_kubelet_metrics"
+    schemaDefinitionFilePath: "./conf/prom_kubelet_metrics_schema.txt"
+    queriesTextFilePath: "./conf/prom_kubelet_metrics_queries.txt"
+    eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
+    executionInterval: "1"  # executionInterval (is in minutes, whole numbers only)
 ```
 
 
 Parameter | Function | Default Value
 --------- | -------- | -------------
-debugLogging | Choose to turn on debug level logginf. | `false`
+debugLogging | Choose to turn on debug level logging. | `false`
 eventsServiceEndpoint | URL to connect to the AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-AbouttheAnalyticsEventsAPI) for the URL for your controller. | (blank)
-eventsServiceApikey | API Key to connect to AppD controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
+eventsServiceApikey | API Key to connect to AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
 controllerGlobalAccount | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
 prometheusUrl | The URL of your Prometheus deployment | `http://localhost:9090/api/v1/query`
-schema_name | Reporting data to analytics requires a schema to be created. Change this value if you are connecting more than one of these extensions to more than one Prometheus deployment | `prometheus_events`
-local_file | The location of the local file used for data when `read_local` is set to `true` | `data/sample.json`
+authenticationMode | The authentication mode needed to connect to the Prometheus deployment. The options are `none` or `awssigv4` | `none`
+awsRegion | The location of the local file used for data when `read_local` is set to `true` | `data/sample.json`
 
 
 ### Configure Schema

@@ -133,6 +133,8 @@ public class AppdPrometheusAppListener implements ApplicationConstants, Applicat
     			Thread driverThread = new Thread(driver);
     			driverThread.start();
     			ANALYTICS_DRIVER_THREADS.add(driverThread);
+    			
+    			Thread.currentThread().sleep(5000);
         		
         	}
         }		
