@@ -2,5 +2,136 @@
 
 [AppDynamics](https://www.appdynamics.com) integration with Prometheus ...
 
+## Introduction
+
+This extension connects to a Prometheus endpoint and runs the specified queries.
+Responses are then parsed and then passed to [AppDynamics](https://www.appdynamics.com) as analytics events.
+[AWS AMP](https://us-west-2.console.aws.amazon.com/prometheus/home) (Amazon Managed Service for Prometheus) is supported using the [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) signing process.
+
+
+
+
+## Pre-requisites
+
+1. Java JRE 1.8 or above
+
+2. (Optional) AWS Account with access to an AMP Wokspaces - only required if accessing AMP
+
+3. AppDynamics controller with appropriate Analytics licence.
+
+
+
+## Installation
+
+### Clone package
+
+```
+$ git clone https://github.com/james201010/prometheus-appd.git
+$ cd prometheus-app
+```
+
+## Configuration
+
+### Configure extension controller connection
+
+Open the the conf/config.yaml file for editing. The default configuration is below
+
+```
+!!com.appdynamics.cloud.prometheus.config.ServiceConfig
+
+debugLogging: false
+eventsServiceEndpoint: "https://analytics.api.appdynamics.com:443"
+eventsServiceApikey: ""
+controllerGlobalAccount: ""
+prometheusUrl: "https://aps-workspaces.us-west-2.amazonaws.com/workspaces/ws-xxxx-yyyy-xxxx-yyyy-xxxx/api/v1/query"
+authenticationMode: "awssigv4"    # options are ( none | awssigv4 )
+awsRegion: "us-west-2"            # mandatory if authenticationMode = awssigv4
+awsAccessKey: ""                  # mandatory if authenticationMode = awssigv4
+awsSecretKey: ""                  # mandatory if authenticationMode = awssigv4
+  
+analyticsEventsSources:
+  - schemaName: "prom_node_metrics"
+    schemaDefinitionFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_node_metrics_schema.txt"
+    queriesTextFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_node_metrics_queries.txt"
+    eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
+    executionInterval: "1"  # executionInterval (is in minutes, whole numbers only)
+
+#  - schemaName: "prom_kubelet_metrics"
+#    schemaDefinitionFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_kubelet_metrics_schema.txt"
+#    queriesTextFilePath: "/opt/appdynamics/prometheus-appd/conf/prom_kubelet_metrics_queries.txt"
+#    eventsSourceClass: "com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource"
+#    executionInterval: "1"  # executionInterval (is in minutes, whole numbers only)
+```
+
+
+Parameter | Function | Default Value
+--------- | -------- | -------------
+debugLogging | Choose to turn on debug level logginf. | `false`
+eventsServiceEndpoint | URL to connect to the AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-AbouttheAnalyticsEventsAPI) for the URL for your controller. | (blank)
+eventsServiceApikey | API Key to connect to AppD controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
+controllerGlobalAccount | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
+prometheusUrl | The URL of your Prometheus deployment | `http://localhost:9090/api/v1/query`
+schema_name | Reporting data to analytics requires a schema to be created. Change this value if you are connecting more than one of these extensions to more than one Prometheus deployment | `prometheus_events`
+local_file | The location of the local file used for data when `read_local` is set to `true` | `data/sample.json`
+
+
+### Configure Schema
+
+To be able to publish Prometheus data to AppD a custom schema needs to be created in your controller. This schema must match the data types of your Prometheus data. The default schema configuration matches the schema required for the default queries in conf/queries.txt.
+
+Open conf/schema.json for editing.
+
+```
+{
+  "name": "string",
+  "instance": "string",
+  "job": "string",
+  "quantile": "string",
+  "code": "string",
+  "handler": "string",
+  "value": "float"
+}
+
+```
+
+Ensure the following:
+
+* There is a paramter for each value returned from every Prometheus query.
+* `metric_name` is required and should not be changed.
+* `metric_value` is required and shold not be changed.
+
+The extension cannot modify or delete existing schemas. If you have an existing schema which needs editing follow instructions [in our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-update_schemaUpdateEventSchema)
+
+### Configure Prometheus Queries
+
+The extension has been designed to run Prometheus queries in series. By default
+the extension will run two sample queries as defined in conf/queries.txt and send the data to AppD as analytics events.
+
+Open conf/queries.txt for editing.
+
+```
+prometheus_target_interval_length_seconds
+prometheus_http_requests_total
+```
+
+The two default queries are listed above. You can add and change these to match the data that you'd like to export from Prometheus to AppD. Each query should be on its own line.
+
+Once you have added your queries you should ensure that your schema config matches the data that Prometheus will return. Failure to do this will cause an error at runtime.
+
+## Run Extension
+
+### Run extension - locally
+If running locally the extension is ready to run. Run the extension with the
+following command.
+
+```
+$ npm run run
+```
+
+or
+
+```
+$ node dist/index.js
+```
 
 
