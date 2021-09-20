@@ -5,6 +5,7 @@ package com.appdynamics.cloud.prometheus.analytics;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Calendar;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -46,18 +47,30 @@ public class AnalyticsEventsDriver implements Runnable, AnalyticsEventsPublisher
 
 			try {
 				
-				logr.info("##############################  Publishing Analytics Events for schema '" + this.analyticsEventsSource.getSchemaName() + "'");
+				long startTime = Calendar.getInstance().getTimeInMillis();
+				
+				logr.info("##############################  Publishing Analytics Events for schema '" + this.analyticsEventsSource.getSchemaName() + "'  : BEGIN");
 				
 				this.createSchemaIfRequired();
-
-				//this.publishEvents();
 				
 				this.analyticsEventsSource.timeToPublishEvents(this);
 				
+				long endTime = Calendar.getInstance().getTimeInMillis();
+				long totalTimeSecs = (endTime - startTime) / 1000;
+				long totalTimeMins = totalTimeSecs / 60;			
+				long minsInSecs = totalTimeMins * 60;
+				long remainingSecs = totalTimeSecs - minsInSecs;
 				
+				logr.info("##############################  Publishing Analytics Events for schema '" + this.analyticsEventsSource.getSchemaName() + "'  : END");
+				logr.info("##############################  Total Elapsed Time = " + totalTimeMins + " minutes : " + remainingSecs + " seconds");
 				
 				
 				Thread.currentThread().sleep(this.analyticsEventsSource.getExecutionInterval() * 60000);
+				
+				logr.carriageReturn();
+				logr.carriageReturn();
+				//logr.carriageReturnDebug();
+				//logr.carriageReturnDebug();
 				
 			} catch (Throwable ex) {
 				ex.printStackTrace();
@@ -88,7 +101,7 @@ public class AnalyticsEventsDriver implements Runnable, AnalyticsEventsPublisher
 	    
 	    CloseableHttpResponse response = client.execute(request);
 		
-	    logr.info(" - Schema: " + this.analyticsEventsSource.getSchemaName() + " : HTTP Status: " + response.getStatusLine().getStatusCode());
+	    logr.info("Analytics Publish Response for schema '" + this.analyticsEventsSource.getSchemaName() + "' = HTTP Status: " + response.getStatusLine().getStatusCode());
 	    
 		String resp = "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -101,8 +114,8 @@ public class AnalyticsEventsDriver implements Runnable, AnalyticsEventsPublisher
         resp = out.toString();
 		reader.close();
 		
-		logr.info("Publish Events Response");
-		logr.info(resp);
+		logr.debug("Publish Events Response");
+		logr.debug(resp);
 
 		HttpClientUtils.closeQuietly(response);
 		HttpClientUtils.closeQuietly(client);

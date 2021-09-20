@@ -81,16 +81,20 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 		
 		
 		String[] promQueries = this.getPromQueriesFromFile();
-		
+
+		logr.carriageReturn();
+		//logr.carriageReturnDebug();
 		
 		for (int qryCntr = 0; qryCntr < promQueries.length; qryCntr++) {
 			
+			logr.info("Executing PromQL Query = " + promQueries[qryCntr]);
 			String jsonPayload = this.buildJSONForQuery(this.executePromQuery(promQueries[qryCntr]));
-			
-			logr.carriageReturn();
-			logr.info(jsonPayload);
+			logr.debug(jsonPayload);
 			publisher.publishEvents(jsonPayload);
 			
+			
+			logr.carriageReturn();
+			//logr.carriageReturnDebug();
 			
 		}
 		
@@ -104,18 +108,14 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 		
 		JSONObject respObj = new JSONObject(json);
 		
-		String str = respObj.getString("status");
-		
-		logr.info("status = " + str);
-		
 		JSONObject dataObj = respObj.getJSONObject("data");
 		
 		JSONArray resArray = dataObj.getJSONArray("result");
 		
 		if (resArray != null && resArray.length() > 0) {
-			logr.info("Result array has data | array length = " + resArray.length());
+			logr.info("PromQL Query result array has data | array length = " + resArray.length());
 		} else {
-			logr.info("Result array has no data");
+			logr.info("PromQL Query result array has no data");
 			return null;
 		}
 		
@@ -229,7 +229,8 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 			break;
 		}
 		
-		logr.info(queryResults);
+		
+		logr.info(queryResults.replaceAll("[\n\r]", ""));
 		
 		return queryResults;
 	}
