@@ -31,7 +31,7 @@ $ cd prometheus-app
 
 ## Configuration
 
-### Configure extension controller connection
+### Configure primary parameters for extension
 
 Open the the conf/config.yaml file for editing. The default configuration is below
 
@@ -71,12 +71,25 @@ eventsServiceApikey | API Key to connect to AppDynamics controller events servic
 controllerGlobalAccount | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
 prometheusUrl | The URL of your Prometheus deployment | `http://localhost:9090/api/v1/query`
 authenticationMode | The authentication mode needed to connect to the Prometheus deployment. The options are `none` or `awssigv4` | `none`
-awsRegion | The location of the local file used for data when `read_local` is set to `true` | `data/sample.json`
+awsRegion | The AWS region where your AMP workspace is located (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
+awsAccessKey | The access key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
+awsSecretKey | The secret key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
+analyticsEventsSources | The list of sources that define the PromQL queries and their associated schema where the metrics from the queries will be published to | (one source for `prom_node_metrics` and one for `prom_kubelet_metrics`)
+
+### Configure event sources for extension
 
 
-### Configure Schema
 
-To be able to publish Prometheus data to AppD a custom schema needs to be created in your controller. This schema must match the data types of your Prometheus data. The default schema configuration matches the schema required for the default queries in conf/queries.txt.
+Parameter | Function | Default Value
+--------- | -------- | -------------
+schemaName | Choose to turn on debug level logging. | `false`
+schemaDefinitionFilePath | URL to connect to the AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-AbouttheAnalyticsEventsAPI) for the URL for your controller. | (blank)
+queriesTextFilePath | API Key to connect to AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
+eventsSourceClass | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
+
+### Configure a Schema for an event source
+
+To be able to publish Prometheus data to AppDynamics, a custom schema needs to be created in your controller. This schema must match the data types of your Prometheus data. The default schema configurations match the schemas required for the queries in conf/prom_node_metrics_queries.txt and conf/prom_kubelet_metrics_queries.txt.
 
 Open conf/schema.json for editing.
 
@@ -101,9 +114,9 @@ Ensure the following:
 
 The extension cannot modify or delete existing schemas. If you have an existing schema which needs editing follow instructions [in our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-update_schemaUpdateEventSchema)
 
-### Configure Prometheus Queries
+### Configure Prometheus Queries for an event source
 
-The extension has been designed to run Prometheus queries in series. By default
+The extension has been designed to run Prometheus queries in series for each event source. By default
 the extension will run two sample queries as defined in conf/queries.txt and send the data to AppD as analytics events.
 
 Open conf/queries.txt for editing.
