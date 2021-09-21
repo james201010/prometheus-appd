@@ -100,7 +100,7 @@ Parameter | Function | Default Value(s)
 schemaName | Reporting data to analytics requires a schema to be created. | `prom_node_metrics` and `prom_kubelet_metrics`
 schemaDefinitionFilePath | The path to the file that contains the definition of the schema. | `./conf/prom_node_metrics_schema.txt` and `./conf/prom_kubelet_metrics_schema.txt`
 queriesTextFilePath | The path to the file that contains the PromQL queries related to the schema. | `./conf/prom_node_metrics_queries.txt` and `./conf/prom_kubelet_metrics_queries.txt`
-eventsSourceClass | The fully qualified class name of the events source used to produce events containing Prometheus metrics| `com.appdynamics.cloud.prometheus.analytics.PrometheusEventsSource` (do not change)
+eventsSourceClass | The fully qualified class name of the events source used to produce events containing Prometheus metrics| (do not change)
 executionInterval | The interval in minutes that the PromQL queries will be executed | `1`
 
 ### Configure a Schema for an event source
