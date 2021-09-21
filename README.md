@@ -47,7 +47,37 @@ authenticationMode: "awssigv4"    # options are ( none | awssigv4 )
 awsRegion: "us-west-2"            # mandatory if authenticationMode = awssigv4
 awsAccessKey: ""                  # mandatory if authenticationMode = awssigv4
 awsSecretKey: ""                  # mandatory if authenticationMode = awssigv4
-  
+
+
+# events sources configuration
+
+analyticsEventsSources:
+
+  # see details for events sources configuration in the next section
+
+```
+
+
+Parameter | Function | Default Value
+--------- | -------- | -------------
+debugLogging | Choose to turn on debug level logging. | `false`
+eventsServiceEndpoint | URL to connect to the AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-AbouttheAnalyticsEventsAPI) for the URL for your controller. | (blank)
+eventsServiceApikey | API Key to connect to AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
+controllerGlobalAccount | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
+prometheusUrl | The URL of your Prometheus deployment | `http://localhost:9090/api/v1/query`
+authenticationMode | The authentication mode needed to connect to the Prometheus deployment. The options are `none` or `awssigv4` | `none`
+awsRegion | The AWS region where your AMP workspace is located (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
+awsAccessKey | The access key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
+awsSecretKey | The secret key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
+analyticsEventsSources | The list of sources that define the PromQL queries and their associated schema where the metrics from the queries will be published to | one source for `prom_node_metrics` and one for `prom_kubelet_metrics`
+
+### Configure event sources for extension
+
+
+
+```
+# events sources configuration
+
 analyticsEventsSources:
   - schemaName: "prom_node_metrics"
     schemaDefinitionFilePath: "./conf/prom_node_metrics_schema.txt"
@@ -63,28 +93,11 @@ analyticsEventsSources:
 ```
 
 
-Parameter | Function | Default Value
+Parameter | Function | Default Value(s)
 --------- | -------- | -------------
-debugLogging | Choose to turn on debug level logging. | `false`
-eventsServiceEndpoint | URL to connect to the AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-AbouttheAnalyticsEventsAPI) for the URL for your controller. | (blank)
-eventsServiceApikey | API Key to connect to AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
-controllerGlobalAccount | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
-prometheusUrl | The URL of your Prometheus deployment | `http://localhost:9090/api/v1/query`
-authenticationMode | The authentication mode needed to connect to the Prometheus deployment. The options are `none` or `awssigv4` | `none`
-awsRegion | The AWS region where your AMP workspace is located (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
-awsAccessKey | The access key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
-awsSecretKey | The secret key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
-analyticsEventsSources | The list of sources that define the PromQL queries and their associated schema where the metrics from the queries will be published to | (one source for `prom_node_metrics` and one for `prom_kubelet_metrics`)
-
-### Configure event sources for extension
-
-
-
-Parameter | Function | Default Value
---------- | -------- | -------------
-schemaName | Choose to turn on debug level logging. | `false`
-schemaDefinitionFilePath | URL to connect to the AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-AbouttheAnalyticsEventsAPI) for the URL for your controller. | (blank)
-queriesTextFilePath | API Key to connect to AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
+schemaName | Reporting data to analytics requires a schema to be created. | `prom_node_metrics` and `prom_kubelet_metrics`
+schemaDefinitionFilePath | The path to the file that contains the definition of the schema. | `./conf/prom_node_metrics_schema.txt` and `./conf/prom_kubelet_metrics_schema.txt`
+queriesTextFilePath | The path to the file that contains the PromQL queries related to the schema. | `./conf/prom_node_metrics_queries.txt` and `./conf/prom_kubelet_metrics_queries.txt`
 eventsSourceClass | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
 
 ### Configure a Schema for an event source
