@@ -42,7 +42,7 @@ debugLogging: false
 eventsServiceEndpoint: "https://analytics.api.appdynamics.com:443"
 eventsServiceApikey: ""
 controllerGlobalAccount: ""
-prometheusUrl: "https://aps-workspaces.us-west-2.amazonaws.com/workspaces/ws-xxxx-yyyy-xxxx-yyyy/api/v1/query"
+prometheusUrl: "https://aps-workspaces.us-west-2.amazonaws.com/workspaces/ws-xxxx-yyy-xxxx-yyy/api/v1/query"
 authenticationMode: "awssigv4"    # options are ( none | awssigv4 )
 awsRegion: "us-west-2"            # mandatory if authenticationMode = awssigv4
 awsAccessKey: ""                  # mandatory if authenticationMode = awssigv4
