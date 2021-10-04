@@ -11,15 +11,15 @@ import java.util.List;
  */
 public class ServiceConfig {
 
-	private boolean debugLogging = false;
+	private String loggingLevel = "info";
     private String eventsServiceEndpoint;
     private String eventsServiceApikey;
     private String controllerGlobalAccount;
     private String prometheusUrl;
     private String authenticationMode;
     private String awsRegion;
-    private String awsAccessKey;
-    private String awsSecretKey;
+    //private String awsAccessKey;
+    //private String awsSecretKey;
 	
 	private List<AnalyticsEventsSourceConfig> analyticsEventsSources;
 	
@@ -33,14 +33,14 @@ public class ServiceConfig {
 
 	
 	
-	public boolean isDebugLogging() {
-		return debugLogging;
+	public String getLoggingLevel() {
+		return this.loggingLevel;
 	}
 
 
 
-	public void setDebugLogging(boolean debugLog) {
-		this.debugLogging = debugLog;
+	public void setLoggingLevel(String logLevel) {
+		this.loggingLevel = logLevel;
 	}
 
 
@@ -105,24 +105,24 @@ public class ServiceConfig {
 	}
 
 
-	public String getAwsAccessKey() {
-		return awsAccessKey;
-	}
-
-
-	public void setAwsAccessKey(String awsAccessKey) {
-		this.awsAccessKey = awsAccessKey;
-	}
-
-
-	public String getAwsSecretKey() {
-		return awsSecretKey;
-	}
-
-
-	public void setAwsSecretKey(String awsSecretKey) {
-		this.awsSecretKey = awsSecretKey;
-	}
+//	public String getAwsAccessKey() {
+//		return awsAccessKey;
+//	}
+//
+//
+//	public void setAwsAccessKey(String awsAccessKey) {
+//		this.awsAccessKey = awsAccessKey;
+//	}
+//
+//
+//	public String getAwsSecretKey() {
+//		return awsSecretKey;
+//	}
+//
+//
+//	public void setAwsSecretKey(String awsSecretKey) {
+//		this.awsSecretKey = awsSecretKey;
+//	}
 
 
 	public List<AnalyticsEventsSourceConfig> getAnalyticsEventsSources() {

@@ -16,9 +16,9 @@ import com.appdynamics.cloud.prometheus.Logger;
  */
 public class Sigv4Client {
     
-	private static Logger logr = new Logger(Sigv4Client.class.getSimpleName(), AppdPrometheusAppListener.DEBUG_LOGGING);
+	private static Logger logr = new Logger(Sigv4Client.class.getSimpleName(), AppdPrometheusAppListener.LOGGING_LEVEL);
 	
-    public static String processRequest(String endpointUrlWithParms, String regionName, String awsAccessKey, String awsSecretKey, Map<String, String> queryParameters) {
+    public static String processRequest(String endpointUrlWithParms, String regionName, String awsAccessKey, String awsSecretKey, String awsSessionToken, Map<String, String> queryParameters) {
         
         // the region-specific endpoint to the target object expressed in path style
         URL endpointUrl;
@@ -39,17 +39,20 @@ public class Sigv4Client {
         											   queryParameters, // no query parameters
                                                        Sigv4SignerBase.EMPTY_BODY_SHA256, 
                                                        awsAccessKey, 
-                                                       awsSecretKey);
+                                                       awsSecretKey,
+                                                       awsSessionToken);
                 
         // place the computed signature into a formatted 'Authorization' header
         // and call the service
         headers.put("Authorization", authorization);
         String response = Sigv4HttpUtils.invokeHttpRequest(endpointUrl, "GET", headers, null);
-        logr.carriageReturnDebug();
-        logr.debug("--------------------------------------------------------------------------------- Response content begin ---------");
-        logr.debug(response);
-        logr.debug("--------------------------------------------------------------------------------- Response content end -----------");
+        logr.carriageReturnTrace();
+        logr.trace("--------------------------------------------------------------------------------- Response content begin ---------");
+        logr.trace(response);
+        logr.trace("--------------------------------------------------------------------------------- Response content end -----------");
         
         return response;
     }
+    
+    
 }

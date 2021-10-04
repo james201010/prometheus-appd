@@ -3,9 +3,9 @@
 
 ## Introduction
 
-This extension connects to a Prometheus endpoint and runs the specified queries.
+This extension connects to a Prometheus endpoint and runs the specified `PromQL` queries.
 Responses are then parsed and then passed to [AppDynamics](https://www.appdynamics.com) as analytics events.
-[AWS AMP](https://us-west-2.console.aws.amazon.com/prometheus/home) (Amazon Managed Service for Prometheus) is supported using the [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) signing process.
+[Amazon Managed Service for Prometheus (AMP)](https://us-west-2.console.aws.amazon.com/prometheus/home)  is supported using the [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) signing process.
 
 
 
@@ -14,7 +14,7 @@ Responses are then parsed and then passed to [AppDynamics](https://www.appdynami
 
 1. Java JRE 1.8 or above
 
-2. (Optional) AWS Account with access to an AMP Wokspaces - only required if accessing AMP
+2. (Optional) AWS IAM Role with access to an AMP Workspace - only required if accessing AMP
 
 3. AppDynamics controller with appropriate Analytics licence.
 
@@ -22,11 +22,11 @@ Responses are then parsed and then passed to [AppDynamics](https://www.appdynami
 
 ## Installation
 
-### Clone package
+### Clone repository
 
 ```
-$ git clone https://github.com/james201010/prometheus-appd.git
-$ cd prometheus-app
+$ git clone https://github.com/Appdynamics/prometheus-extension.git
+$ cd prometheus-extension
 ```
 
 ## Configuration
@@ -38,15 +38,13 @@ Open the the conf/config.yaml file for editing. The default configuration is bel
 ```
 !!com.appdynamics.cloud.prometheus.config.ServiceConfig
 
-debugLogging: false
+loggingLevel: "info"
 eventsServiceEndpoint: "https://analytics.api.appdynamics.com:443"
 eventsServiceApikey: ""
 controllerGlobalAccount: ""
 prometheusUrl: "https://aps-workspaces.us-west-2.amazonaws.com/workspaces/ws-xxxx-yyy-xxxx-yyy/api/v1/query"
 authenticationMode: "awssigv4"    # options are ( none | awssigv4 )
 awsRegion: "us-west-2"            # mandatory if authenticationMode = awssigv4
-awsAccessKey: ""                  # mandatory if authenticationMode = awssigv4
-awsSecretKey: ""                  # mandatory if authenticationMode = awssigv4
 
 
 # events sources configuration
@@ -60,16 +58,14 @@ analyticsEventsSources:
 
 Parameter | Function | Default Value
 --------- | -------- | -------------
-debugLogging | Choose to turn on debug level logging. | `false`
+loggingLevel | Choose the logging level. The options are `info` or `debug` or `trace` | `info`
 eventsServiceEndpoint | URL to connect to the AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Analytics+Events+API#AnalyticsEventsAPI-AbouttheAnalyticsEventsAPI) for the URL for your controller. | (blank)
 eventsServiceApikey | API Key to connect to AppDynamics controller events service. See [our documentation](https://docs.appdynamics.com/display/PRO45/Managing+API+Keys) to create an API key. | (blank)
 controllerGlobalAccount | Account name to connect to the AppDynamics controller. See Settings > License > Account for the value for your controller | (blank)
 prometheusUrl | The URL of your Prometheus deployment | `http://localhost:9090/api/v1/query`
 authenticationMode | The authentication mode needed to connect to the Prometheus deployment. The options are `none` or `awssigv4` | `none`
 awsRegion | The AWS region where your AMP workspace is located (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
-awsAccessKey | The access key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
-awsSecretKey | The secret key for the AWS IAM user with access to the AMP workspace (optional if `authenticationMode` is not set to `awssigv4`) | (blank)
-analyticsEventsSources | The list of sources that define the PromQL queries and their associated schema where the metrics from the queries will be published to | one source for `prom_node_metrics` and one for `prom_kubelet_metrics`
+analyticsEventsSources | The list of sources that define the PromQL queries and their associated schema within AppDynamics where the metrics from the queries will be published to | one source for `prom_node_metrics` and one for `prom_kubelet_metrics`
 
 ### Configure event sources for extension
 
@@ -105,7 +101,9 @@ executionInterval | The interval in minutes that the PromQL queries will be exec
 
 ### Configure a Schema for an event source
 
-To be able to publish Prometheus data to AppDynamics, a custom schema needs to be created in your controller for each event source. The schema must match the data types of your Prometheus data. The two default event sources configurations (`prom_node_metrics` and `prom_kubelet_metrics`) each have a schema definition file (`./conf/prom_node_metrics_schema.txt` and `./conf/prom_kubelet_metrics_schema.txt`) that matches the data returned from the queries in their associated queries text files `./conf/prom_node_metrics_queries.txt` and `./conf/prom_kubelet_metrics_queries.txt`.
+To be able to publish Prometheus data to AppDynamics, a custom schema needs to be created in your controller for each event source. The schema must match the data types of your Prometheus data. 
+
+The two default event sources configurations (`prom_node_metrics` and `prom_kubelet_metrics`) each have a schema definition file (`./conf/prom_node_metrics_schema.txt` and `./conf/prom_kubelet_metrics_schema.txt`) that matches the data returned from the queries in their associated queries text files `./conf/prom_node_metrics_queries.txt` and `./conf/prom_kubelet_metrics_queries.txt`.
 
 Let's use the `prom_node_metrics` events source configuration in this example.
 
@@ -153,12 +151,36 @@ The three default queries in this file are listed above. You can add and change 
 
 Once you have added your queries you should ensure that your schema config matches the data that Prometheus will return (using the schema definition guidelines mentioned earlier). Failure to do this will cause an error at runtime.
 
+### Configure AWS IAM Role for AMP
+
+If you use `awssigv4` as the `authenticationMode` in the `./conf/config.yaml` file to connect to an AWS AMP Workspace, you will need to add the following [policy or the equivalent permissions](https://console.aws.amazon.com/iam/home?#/policies/arn:aws:iam::aws:policy/AmazonPrometheusQueryAccess$jsonEditor) to the IAM Role used to run this extension (e.g. the IAM Role associated with the EC2 instance running the extension).
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "aps:GetLabels",
+                "aps:GetMetricMetadata",
+                "aps:GetSeries",
+                "aps:QueryMetrics"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+
 
 ## Run Extension
 
-Change to the directory where you have installed the extension (e.g. `prometheus-app`)
+Change to the directory where you have installed the extension (e.g. `prometheus-extension`) then use the commands below to start the extension.
 
 ```
+$ chmod +x run_service.sh
 $ ./run_service.sh
 ```
 

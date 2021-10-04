@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -19,6 +20,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.amazonaws.util.EC2MetadataUtils;
+import com.amazonaws.util.EC2MetadataUtils.IAMSecurityCredential;
 import com.appdynamics.cloud.prometheus.ApplicationConstants;
 import com.appdynamics.cloud.prometheus.Logger;
 import com.appdynamics.cloud.prometheus.awssigv4.Sigv4Client;
@@ -38,6 +41,9 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 	private Map<String, String> schemaMap;
 	private static Logger logr;
 	
+	private Map<String, IAMSecurityCredential> awsCreds = null;
+	//private AWSCredentials awsCredentials = null;
+	private IAMSecurityCredential awsIamCredential = null;
 	
 	/**
 	 * 
@@ -49,13 +55,14 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 	@Override
 	public void initialize(ServiceConfig serviceConfig, AnalyticsEventsSourceConfig analyticsEventsSourceConfig) throws Throwable {
 		
-		logr = new Logger(PrometheusEventsSource.class.getSimpleName(), serviceConfig.isDebugLogging());
+		logr = new Logger(PrometheusEventsSource.class.getSimpleName(), serviceConfig.getLoggingLevel());
 		this.serviceConfig = serviceConfig;
 		this.eventsSourceConfig = analyticsEventsSourceConfig;
 		this.executionInterval = Integer.parseInt(this.eventsSourceConfig.getExecutionInterval());
 		this.schemaMap = this.getSchemaMap();
 		
-		
+		logr.carriageReturnInfo();
+		logr.carriageReturnInfo();
 		logr.info("##############################  Initializing Prometheus Events Source for schema '" + this.eventsSourceConfig.getSchemaName() + "'");
 	}
 
@@ -79,22 +86,43 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 	@Override
 	public void timeToPublishEvents(AnalyticsEventsPublisher publisher) throws Throwable {
 		
+		String authMode = serviceConfig.getAuthenticationMode();
+		if (authMode == null) {
+			authMode = "";
+		}
+		
+		if (authMode.equals(AUTH_MODE_AWSSIGV4)) {
+		    this.awsCreds = EC2MetadataUtils.getIAMSecurityCredentials();
+		    
+		    Set<String> credKeys = this.awsCreds.keySet();
+		    
+
+		    logr.carriageReturnDebug();
+		    for (String credKey : credKeys) {
+		    	
+		    	logr.debug("AWS Role = " + credKey);
+
+		    	awsIamCredential = this.awsCreds.get(credKey);
+		    	
+		    }
+			
+		}
 		
 		String[] promQueries = this.getPromQueriesFromFile();
 
-		logr.carriageReturn();
-		//logr.carriageReturnDebug();
+		//logr.carriageReturn();
+		logr.carriageReturnDebug();
 		
 		for (int qryCntr = 0; qryCntr < promQueries.length; qryCntr++) {
 			
-			logr.info("Executing PromQL Query = " + promQueries[qryCntr]);
+			logr.debug("Executing PromQL Query = " + promQueries[qryCntr]);
 			String jsonPayload = this.buildJSONForQuery(this.executePromQuery(promQueries[qryCntr]));
-			logr.debug(jsonPayload);
+			logr.trace(jsonPayload);
 			publisher.publishEvents(jsonPayload);
 			
 			
-			logr.carriageReturn();
-			//logr.carriageReturnDebug();
+			//logr.carriageReturn();
+			logr.carriageReturnDebug();
 			
 		}
 		
@@ -113,9 +141,9 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 		JSONArray resArray = dataObj.getJSONArray("result");
 		
 		if (resArray != null && resArray.length() > 0) {
-			logr.info("PromQL Query result array has data | array length = " + resArray.length());
+			logr.debug("PromQL Query result array has data | array length = " + resArray.length());
 		} else {
-			logr.info("PromQL Query result array has no data");
+			logr.debug("PromQL Query result array has no data");
 			return null;
 		}
 		
@@ -230,7 +258,7 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 		}
 		
 		
-		logr.info(queryResults.replaceAll("[\n\r]", ""));
+		logr.trace(queryResults.replaceAll("[\n\r]", ""));
 		
 		return queryResults;
 	}
@@ -248,8 +276,8 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 
 	    CloseableHttpResponse response = client.execute(request);
 		
-	    logr.debug(" - Executing Query with No Auth");
-	    logr.debug(" - Query: " + promQl + " : HTTP Status: " + response.getStatusLine().getStatusCode());
+	    logr.trace(" - Executing Query with No Auth");
+	    logr.trace(" - Query: " + promQl + " : HTTP Status: " + response.getStatusLine().getStatusCode());
 	    
 		String resp = "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -262,8 +290,8 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
         resp = out.toString();
 		reader.close();
 		
-		logr.debug(" - Query Response");
-		logr.debug(resp);
+		logr.trace(" - Query Response");
+		logr.trace(resp);
 
 		HttpClientUtils.closeQuietly(response);
 		HttpClientUtils.closeQuietly(client);
@@ -277,15 +305,27 @@ public class PrometheusEventsSource implements AnalyticsEventsSource, Applicatio
 		String restEndpoint = this.constructEndpointQuery(promQl);
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("query", promQl);
+		
+		logr.carriageReturnTrace();
+		logr.carriageReturnTrace();
+		logr.trace("****************************************************************************************************************************************************************************************");
+		logr.trace(" - Executing Query with AWS Sigv4 Auth");
+	    logr.trace(" - Query: " + promQl);
+	    logr.trace("****************************************************************************************************************************************************************************************");
 	    
-		logr.carriageReturnDebug();
-		logr.carriageReturnDebug();
-		logr.debug("****************************************************************************************************************************************************************************************");
-		logr.debug(" - Executing Query with AWS Sigv4 Auth");
-	    logr.debug(" - Query: " + promQl);
-	    logr.debug("****************************************************************************************************************************************************************************************");
 	    
-		return Sigv4Client.processRequest(restEndpoint, this.serviceConfig.getAwsRegion(), this.serviceConfig.getAwsAccessKey(), this.serviceConfig.getAwsSecretKey(), queryParameters);
+	    
+    	//logr.info("AWS Access Key = '" + this.awsIamCredential.accessKeyId + "'");
+    	//logr.info("AWS Secret Key = '" + this.awsIamCredential.secretAccessKey + "'");
+    	//logr.info("AWS Session Token = '" + this.awsIamCredential.token + "'");
+	    
+	    
+		return Sigv4Client.processRequest(restEndpoint, this.serviceConfig.getAwsRegion(), this.awsIamCredential.accessKeyId, this.awsIamCredential.secretAccessKey, this.awsIamCredential.token, queryParameters);
+		 
+	    
+	   // return TestClient.processRequest(restEndpoint, this.serviceConfig.getAwsRegion(), this.awsCredentials);
+	    
+		//return Sigv4Client.processRequest(restEndpoint, this.serviceConfig.getAwsRegion(), this.serviceConfig.getAwsAccessKey(), this.serviceConfig.getAwsSecretKey(), queryParameters);
 		
 	}
 	
