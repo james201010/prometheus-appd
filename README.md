@@ -1,4 +1,4 @@
-# AppDynamics Integration with Prometheus
+# AppDynamics Integration with Prometheus and AWS AMP
 
 
 ## Introduction
